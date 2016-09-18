@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-void processInput(int, char **, int);
+void processInput(int, char **, int, int, char*);
 
 int main(int argc, char **argv) {
 
@@ -28,33 +28,25 @@ int main(int argc, char **argv) {
         start = 3;
     }
 
-    processInput(argc, argv, start);
-    return 0;
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i],"-o") == 0) {
-            printf("found a \"-o\"\n");
-//            processInput(argv[i], 'o');
-        } else if (strcmp(argv[i], "-b") == 0) {
-            printf("found a \"-b\"\n");
-//            processInput(argv[i], 'b');
-        } else if (strcmp(argv[i],"-") == 0) {
-            printf("found a \"-\"\n");
-//            processInput(argv[i], '-');
+    processInput(argc, argv, start, bytes, outputfile);
+    
+return 0;
+}
+
+void processInput(int argc, char** argv, int start, int bytes, char* outputfile) {
+
+    char intext[30];
+    for (int i = start; i < argc; i++) {
+        if (strcmp(argv[i],"-") == 0) {
+            scanf("%s\n", inputfile);
+            printf("%s\n", inputfile);
         } else {
             printf("found an input file name called \"%s\"\n", argv[i]);
-//            processInput(argv[i], 'a');
         }
-    
             //SPECIAL NOTE: Open once, don't re-open each time, don't close it
             //SPECIAL NOTE: Therefore can be done multiple times
     }
 
-return 0;
-}
-
-void processInput(int argc, char** argv, int start) {
-
-    //now process from start through argv til argc, open, write, etc. 
 
 return;
 }
