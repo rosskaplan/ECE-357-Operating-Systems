@@ -1,8 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <fcntl.h> //Defines O_APPEND, O_CREAT, etc. as constants
+#include <errno.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 void processInput(int, char **, int, int, char*);
+void errorOutput(char*, char*, char*);
 
 int main(int argc, char **argv) {
 
@@ -10,43 +16,64 @@ int main(int argc, char **argv) {
         printf("You didn't provide any input or output files!\n");
         return 0;
     }
-
-    //Next cases: no output file --> standardout
-    //get all input files into new array, then start the opening
     char* outputfile;
-    int bytes = -1; 
+    int bytes = -1; //Just to note whether bytes was provided.
     int start = 1;
     if (strcmp(argv[1], "-b") == 0) {
         bytes = strtol(argv[2], NULL, 10);
         start = 3; 
-        if (strcmp(argv[3], "-o") == 0) {
+        if ((argc > 5) && strcmp(argv[3], "-o") == 0) {
             outputfile = argv[4];
             start = 5;
         }
-    } else if (strcmp(argv[1], "-o") == 0) {
+        
+    } else if ((argc > 3) && strcmp(argv[1], "-o") == 0) {
         outputfile = argv[2];
         start = 3;
     }
-
     processInput(argc, argv, start, bytes, outputfile);
     
 return 0;
 }
 
 void processInput(int argc, char** argv, int start, int bytes, char* outputfile) {
-
-    char intext[30];
+    bytes = (bytes == -1)?1024:bytes;
+    char dataarr[bytes+1];
+    int fdw, byteswritten;
+    fdw = open(outputfile, O_CREAT | O_WRONLY | O_TRUNC, 0777);
+    if (!outputfile) fdw = STDOUT_FILENO;
+    if (fdw < 0 && !(!outputfile)) errorOutput("Function call open failed to open ", (!outputfile) ? "stdout" : outputfile, strerror(errno));
+    int fdin, rbytes;
     for (int i = start; i < argc; i++) {
         if (strcmp(argv[i],"-") == 0) {
-            scanf("%s\n", inputfile);
-            printf("%s\n", inputfile);
+            fdin = STDIN_FILENO; 
         } else {
-            printf("found an input file name called \"%s\"\n", argv[i]);
+            fdin = open(argv[i], O_RDONLY, 0777);
         }
-            //SPECIAL NOTE: Open once, don't re-open each time, don't close it
-            //SPECIAL NOTE: Therefore can be done multiple times
+
+        while ((rbytes = read(fdin, dataarr, bytes)) > 0) {
+            byteswritten =  write(fdw, dataarr, rbytes);
+            if (byteswritten < 0)
+                errorOutput("Function call write failed to ", (!outputfile) ? "stdout" : outputfile, strerror(errno));
+            else if(byteswritten != rbytes)
+                errorOutput("Function call write was only partially written to ", (!outputfile) ? "stdout" : outputfile, strerror(errno));
+        }
+        if (rbytes < 0) {
+            errorOutput("Function call read failed from ", argv[i], strerror(errno));
+        }
     }
 
+    if (fdw < 0 && !(!outputfile) && close(fdw) < 0)
+        errorOutput("Function call close failed on ", (!outputfile) ? "stdout" : outputfile, strerror(errno));
+    
+
+return;
+}
+
+void errorOutput (char* myOutput, char* whichFile, char* errnoOutput) {
+
+    fprintf(stderr, "Error: %s%s. %s.\n", myOutput, whichFile, errnoOutput);
+    exit(-1); 
 
 return;
 }
