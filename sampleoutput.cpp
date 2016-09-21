@@ -69,7 +69,7 @@ asdlfsdlkfjlsakdj
 asflkajsdflsdlkfjlskdjflkasjflksjlfskdjfklasjdlkfjaslfjdslfsdlkfjasdlkfjsldk
 asdlfsdlkfj
 asdlfsdlkfjasl
-assignment ross$ ./a.out -b 256 - foo2.txt - foo3.txt -
+assignment1 ross$ ./a.out -b 256 - foo2.txt - foo3.txt -
 hi
 hi
 asldfsjflks
