@@ -6,15 +6,11 @@
 #include <unistd.h>
 #include <sys/types.h> //Necessary on some operating systems
 #include <sys/stat.h> //Necessary on some operating systems
-#include <time.h> //Used for timing the program
 
 void processInput(int, char **, int, int, char*);
 void errorOutput(char*, char*, char*);
 
 int main(int argc, char **argv) {
-
-    clock_t t;
-    t = clock();
 
     if (argc == 1) {
         printf("You didn't provide any input or output files!\n");
@@ -39,9 +35,6 @@ int main(int argc, char **argv) {
     }
     processInput(argc, argv, start, bytes, outputfile);
    
-    t = clock() - t;
-    printf ("%f \n",((float)t)/CLOCKS_PER_SEC);
-
 return 0;
 }
 
