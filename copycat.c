@@ -40,8 +40,7 @@ return 0;
 
 void processInput(int argc, char** argv, int start, int bytes, char* outputfile) {
     bytes = (bytes == -1)?1024:bytes;
-    char dataarr[bytes+1];
-    dataarr[bytes] = '\0';
+    char dataarr[bytes];
     int fdw, byteswritten;
     fdw = open(outputfile, O_CREAT | O_WRONLY | O_TRUNC, 0777);
     if (!outputfile) fdw = STDOUT_FILENO;
@@ -56,14 +55,17 @@ void processInput(int argc, char** argv, int start, int bytes, char* outputfile)
 
         while ((rbytes = read(fdin, dataarr, bytes)) > 0) {
             byteswritten =  write(fdw, dataarr, rbytes);
-            if (byteswritten < 0)
+            if (byteswritten <= 0)
                 errorOutput("Function call write failed to ", (!outputfile) ? "stdout" : outputfile, strerror(errno));
             else if(byteswritten != rbytes) {
-                attemptwrite = write(fdw, &dataarr[byteswritten], bytes-byteswritten);
-                if ((attemptwrite + byteswritten) == rbytes) {
-                    fprintf(stderr, "Warning: Partial write occurred, but it was able to write remainder\n");
-                } else {
-                    errorOutput("Function call write was only partially written to ", (!outputfile) ? "stdout" : outputfile, strerror(errno));
+                attemptwrite = 0;
+                while(1) {
+                    attemptwrite = write(fdw, &dataarr[byteswritten], rbytes-byteswritten);
+                    if (attemptwrite < 1)
+                        errorOutput("Function call write was partially written to before failing", (!outputfile) ? "stdout" : outputfile, strerror(errno));
+                    byteswritten += attemptwrite;
+                    if (byteswritten == rbytes)
+                        break;
                 }
             }
         }
