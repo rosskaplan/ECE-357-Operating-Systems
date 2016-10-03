@@ -2,37 +2,52 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <ctype.h>
+
+void findFiles(char*, char*, char*, char*);
 
 int main(int argc, char **argv) {
 
     int ch;
-    int user, mtime, x, l;
-    user = mtime = x = l = 0;
-    char *uid = NULL;
-    char *time = NULL;
-    while ((ch = getopt(argc, argv, "u:m:xl")) != -1) {
+    int uid = 0;
+    char* time = NULL;
+    char* target = NULL;
+    while ((ch = getopt(argc, argv, "u:m:xl:")) != -1) {
         switch(ch) {
             case 'u':
-                user = 1;
-                uid = optarg;
-                printf("found a 'u' and 'uid' is %s\n", uid);
+                if (sscanf(optarg, "%d", &uid) != 1) {
+                    //String -> User's Name
+                    printf("User's name\n");
+                    printf("%d\n",uid);
+                } else {
+                    //Integer -> UID
+                    printf("User's ID\n");
+                    printf("%s\n", optarg); 
+                }
                 break;
             case 'm':
-                mtime = 1;
                 time = optarg;
-                printf("found a 'm' and 'time' is %s\n", time);
                 break;
             case 'x':
-                x = 1;
-                printf("found a x\n");
                 break;
             case 'l':
-                l = 1;
-                printf("found a l\n");
+                target = optarg;
                 break;
         }
     }
 
+    char* path = NULL;
+    if (optind < argc) {
+        path = argv[optind];
+    } else {
+        fprintf(stderr, "Did not get a starting path.  Please try again.");
+        return -1;
+    }
+
 return 0;
+}
+
+void findFiles(char* uid, char* time, char* target, char* path) {
+
+    printf("%s%s%s%s\n", uid, time, target, path);
+    return;
 }
