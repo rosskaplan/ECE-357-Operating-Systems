@@ -2,30 +2,35 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-
+#include <sys/types.h>
+#include <pwd.h>
 void findFiles(char*, char*, char*, char*);
 
 int main(int argc, char **argv) {
 
     int ch;
     int uid = 0;
-    char* time = NULL;
+    int time = 0;
     char* target = NULL;
+    struct passwd *usr;
     while ((ch = getopt(argc, argv, "u:m:xl:")) != -1) {
         switch(ch) {
             case 'u':
-                if (sscanf(optarg, "%d", &uid) != 1) {
-                    //String -> User's Name
-                    printf("User's name\n");
-                    printf("%d\n",uid);
-                } else {
-                    //Integer -> UID
-                    printf("User's ID\n");
-                    printf("%s\n", optarg); 
+                if (sscanf(optarg, "%d", &uid) != 1) { //If it gets a string
+                    if ((usr = getpwnam(optarg)) == NULL) {
+                        fprintf(stderr, "User cannot be found with name %s", optarg);
+                        return -1;
+                    }
+                    uid = usr->pw_uid;
                 }
                 break;
             case 'm':
-                time = optarg;
+                if (sscanf(optarg, "%d", &time) != 1) { //If it gets a string
+                    fprintf(stderr, "Invalid argument: %s. Usage: -m should precede integer.\n", optarg);
+                    return -1;
+                } else {
+                    printf("%d\n", time);
+                } 
                 break;
             case 'x':
                 break;
