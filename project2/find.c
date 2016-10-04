@@ -6,6 +6,10 @@
 #include <pwd.h>
 #include <errno.h>
 #include <dirent.h>
+
+#define PATH_MAX 4096 //Standard maximum length of pathname on unix based systems
+#define FULL_PATH_MAX 4352 //Standard maximum length
+
 void findFiles(int, int, char*, char*);
 
 int main(int argc, char **argv) {
@@ -44,7 +48,7 @@ int main(int argc, char **argv) {
     if (optind < argc) {
         path = argv[optind];
     } else {
-        fprintf(stderr, "Did not get a starting path.  Please try again.");
+        fprintf(stderr, "Did not get a starting path.  Please try again.\n");
         return -1;
     }
 
@@ -64,11 +68,23 @@ void findFiles(int uid, int time, char* target, char* path) {
     }
 
     while ((rd=readdir(directory)) != NULL) {
-        if ((strcmp(rd->d_name, ".") == 0) || (strcmp(rd->dname, "..") == 0)) {
+        if ((strcmp(rd->d_name, ".") == 0) || (strcmp(rd->d_name, "..") == 0)) {
             continue; //Don't recurse over these
         }
-        printf("%s\n", rd->d_name);
+        //printf("%s\n", rd->d_name); //Gets all in directory
+        //Lets now compute absolute paths
+        char testing[PATH_MAX]; //Longest valid pathlength on unix systems
+        char* testpath = realpath(path, testing);
+        printf("testing: %s\n", testing);
+        
+
+
+
+
+
+
     }
+
 
     //printf("%d %d %s %s\n", uid, time, target, path);
     return;
