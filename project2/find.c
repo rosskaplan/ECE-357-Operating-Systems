@@ -4,7 +4,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
-void findFiles(char*, char*, char*, char*);
+#include <errno.h>
+#include <dirent.h>
+void findFiles(int, int, char*, char*);
 
 int main(int argc, char **argv) {
 
@@ -28,14 +30,12 @@ int main(int argc, char **argv) {
                 if (sscanf(optarg, "%d", &time) != 1) { //If it gets a string
                     fprintf(stderr, "Invalid argument: %s. Usage: -m should precede integer.\n", optarg);
                     return -1;
-                } else {
-                    printf("%d\n", time);
                 } 
                 break;
             case 'x':
                 break;
             case 'l':
-                target = optarg;
+                target = optarg; //Error checking later when we open the directory
                 break;
         }
     }
@@ -48,11 +48,28 @@ int main(int argc, char **argv) {
         return -1;
     }
 
+    findFiles(uid, time, target, path);
+
 return 0;
 }
 
-void findFiles(char* uid, char* time, char* target, char* path) {
+void findFiles(int uid, int time, char* target, char* path) {
 
-    printf("%s%s%s%s\n", uid, time, target, path);
+    DIR *directory;
+    struct dirent *rd;
+
+    if ((directory = opendir(path)) == NULL) {
+        fprintf(stderr, "Failed to open directory %s: %s\n", path, strerror(errno));
+        exit(-1);
+    }
+
+    while ((rd=readdir(directory)) != NULL) {
+        if ((strcmp(rd->d_name, ".") == 0) || (strcmp(rd->dname, "..") == 0)) {
+            continue; //Don't recurse over these
+        }
+        printf("%s\n", rd->d_name);
+    }
+
+    //printf("%d %d %s %s\n", uid, time, target, path);
     return;
 }
