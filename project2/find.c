@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    findFiles(uid, mtime, target, path, 0); //pass 0 as first call
+    findFiles(uid, mtime, target, path, 1); //pass 0 as first call
 
 return 0;
 }
@@ -86,9 +86,6 @@ void findFiles(int uid, int mtime, char* target, char* path, int first_call) {
     realpath(path, abspath);
     int len = strlen(abspath);
 
-    //if (first_call == 0) TODO
-    //    printf("%s\n", abspath);
-
     while ((rd=readdir(directory)) != NULL) {
         //store len from before to keep same length of abspath
         //append a slash for path, then null terminate so strcat gets correct lengths
@@ -96,21 +93,28 @@ void findFiles(int uid, int mtime, char* target, char* path, int first_call) {
         abspath[len] = '/';         
         abspath[len+1] = '\0';
 
+        if (strcmp(rd->d_name, "..") == 0)
+            continue;
+
         fullname = strcat(abspath, rd->d_name); //Now we have the full name
                                                 //time to recurse
-        
-        //printf("%s\n", filename); TODO 
+       
+        if (strcmp(rd->d_name, ".") == 0)
+            fullname[strlen(fullname)-1] = '\0';
+ 
         //when we print at end, must include abspath (current directory)
 
-        if ((rd->d_type == DT_DIR) && !((strcmp(rd->d_name, ".") == 0) || (strcmp(rd->d_name, "..") == 0)))
-            findFiles(uid, mtime, target, abspath, 1);
+        if ((rd->d_type == DT_DIR) && !((strcmp(rd->d_name, ".") == 0) || (strcmp(rd->d_name, "..") == 0))) {
+            findFiles(uid, mtime, target, abspath, 0);
+            continue;
+        }
 
         //use lstat over stat to follow the symbolic links
         if (lstat(fullname, &stat_struct) != 0) {
             fprintf(stderr, "Failed to get stat struct on %s: %s\n", fullname, strerror(errno));
             continue; //Not cause for exiting program completely
-        }
-        
+        } 
+
         //handle the -m and -u cases
         if (((uid != -1) && (uid != stat_struct.st_uid)) || ((mtime > 0) && (time(0)-stat_struct.st_mtime) < mtime) || ((mtime < 0) && (-1)*(time(0) - stat_struct.st_mtime) < mtime))
             continue; //no error message as this is not an error
@@ -141,8 +145,24 @@ void findFiles(int uid, int mtime, char* target, char* path, int first_call) {
         sprintf(date, "%d-%02d-%02d %02d:%02d:%02d", modif_time->tm_year+1900, modif_time->tm_mon, modif_time->tm_mday, modif_time->tm_hour, modif_time->tm_min, modif_time->tm_sec);
         
         char file_type;
+        if (stat_struct.st_mode == S_IFREG)
+            file_type = '-';
+        if (stat_struct.st_mode == S_IFDIR)
+            file_type = 'd';
+        if (stat_struct.st_mode == S_IFLNK)
+            file_type = 'l';
+        if (stat_struct.st_mode == S_IFCHR)
+            file_type = 'c';
+        if (stat_struct.st_mode == S_IFBLK)
+            file_type = 'b';
+        if (stat_struct.st_mode == S_IFIFO)
+            file_type = 'p';
+        if (stat_struct.st_mode == S_IFSOCK)
+            file_type = 's';
+        else
+            file_type = '-';
         
-
+        printf("%c\n", file_type);
     
     }
 
