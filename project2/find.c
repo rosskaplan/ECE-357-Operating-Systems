@@ -239,20 +239,23 @@ void findFiles(int uid, int mtime, char* target, char* path, int first_call) {
                     fprintf(stderr, "Unable to follow get symlink: %s\n", strerror(errno));
                     continue;
                 }
-                symlink[strlen(symlink)-2] = '\0';
+                symlink[strlen(symlink)] = '\0';
                 if ((lstat(symlink, &symlink_struct) != 0) && (lstat(target, &target_struct) != 0)) {
                     if ((symlink_struct.st_dev != target_struct.st_dev) || (symlink_struct.st_ino != target_struct.st_ino)) {
                         continue;
                     } else {
                         sprintf(file_name, "%s -> %s", file_name, symlink);
                     }
+                } else {
+                    continue;
                 }
             }
         }
 
         if (perm_0 == 'l') {
-            if(readlink(file_name, symlink, FULL_PATH_MAX) != -1)
+            if (readlink(file_name, symlink, FULL_PATH_MAX) != -1) {
                 sprintf(file_name, "%s -> %s", file_name, symlink);
+            }
         }
 
         if (which_type == 'i') {
