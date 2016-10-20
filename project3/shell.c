@@ -45,6 +45,8 @@ void myParse(char* buff) {
     int i = 0;
     char * commands[32];
     for (word = strtok_r(buff, sep, &temp); word; word = strtok_r(NULL, sep, &temp), i++) {
+        if ((i == 0) && (word[0] == '#'))
+            return;
         if (word[strlen(word)-1] == '\n')
             word[strlen(word)-1] = '\0';
         if (next_word_in == 1) {
@@ -237,7 +239,7 @@ int myExec(char* input, int is_input, char* output, int is_output, char* err, in
             }
             gettimeofday(&tv2, NULL);
             double curtime2 = (float) tv2.tv_sec+(tv2.tv_usec/1000000.0);
-            printf("consuming %f real seconds, %f user, %f system\n", (curtime2-curtime1<0)?curtime1-curtime2:curtime2-curtime1, stat.ru_utime.tv_sec + (stat.ru_utime.tv_usec/1000000.0), stat.ru_stime.tv_sec + (stat.ru_stime.tv_usec/1000000.0));
+            fprintf(stderr, "consuming %f real seconds, %f user, %f system\n", (curtime2-curtime1<0)?curtime1-curtime2:curtime2-curtime1, stat.ru_utime.tv_sec + (stat.ru_utime.tv_usec/1000000.0), stat.ru_stime.tv_sec + (stat.ru_stime.tv_usec/1000000.0));
             break;
     }
 
