@@ -1,35 +1,58 @@
 Rosss-MacBook-Air:project5 barbarakaplan$ ls
-a.out   bgrep.c   justpattern.txt pattern2.txt  test.txt
-aaa.txt   hello   pattern.txt pset-w05.pdf  test1.txt
+a.out     blahh     pattern2.txt
+aaa.txt     hello     pset-w05.pdf
+bgrep.c     justpattern.txt   sampleoutput.txt
+blah      pattern.bin   test.txt
+blah.txt    pattern.txt   test1.txt
 Rosss-MacBook-Air:project5 barbarakaplan$ echo -n "blahh blahh blahh blahh" > blahh
 Rosss-MacBook-Air:project5 barbarakaplan$ cat blahh
-blahh blahh blahh blahhRosss-MacBook-Air:project5 barbarakagcc bgrep.c
+blahh blahh blahh blahhRosss-MacBook-Air:project5 barbarakaplan$ ls
+a.out     blahh     pattern2.txt
+aaa.txt     hello     pset-w05.pdf
+bgrep.c     justpattern.txt   sampleoutput.txt
+blah      pattern.bin   test.txt
+blah.txt    pattern.txt   test1.txt
+Rosss-MacBook-Air:project5 barbarakaplan$ gcc bgrep.c
 Rosss-MacBook-Air:project5 barbarakaplan$ ./a.out -c 3 blahh blahh
-blahh bl
-hh blahh bl
-hh blahh bl
-hh blahh
+blahh:blahh bl
+blahh:hh blahh bl
+blahh:hh blahh bl
+blahh:hh blahh
 Rosss-MacBook-Air:project5 barbarakaplan$ ./a.out blahh blahh
-blahh
-blahh
-blahh
-blahh
+blahh:blahh
+blahh:blahh
+blahh:blahh
+blahh:blahh
+Rosss-MacBook-Air:project5 barbarakaplan$ echo $?
+0
 Rosss-MacBook-Air:project5 barbarakaplan$ echo -n "blah" > blah.txt
 Rosss-MacBook-Air:project5 barbarakaplan$ ./a.out -p blah.txt blahh
-blah
-blah
-blah
-blah
-Rosss-MacBook-Air:project5 barbarakaplan$ ./a.out -p noooooooope test
-Failed to get stat struct on noooooooope: No such file or directory
+blahh:blah
+blahh:blah
+blahh:blah
+blahh:blah
+Rosss-MacBook-Air:project5 barbarakaplan$ ./a.out -p noooooooooooope test
+Failed to get stat struct on noooooooooooope: No such file or directory
 Rosss-MacBook-Air:project5 barbarakaplan$ echo $?
 255
-Rosss-MacBook-Air:project5 barbarakaplan$ ./a.out nooooooooooooooooo test.txt
+Rosss-MacBook-Air:project5 barbarakaplan$ ./a.out nooooooooooooo test.txt
 Rosss-MacBook-Air:project5 barbarakaplan$ echo $?
 1
 Rosss-MacBook-Air:project5 barbarakaplan$ cat test.txt
 blahhblahhblahhblahhRosss-MacBook-Air:project5 barbarakaplan$ ./a.out -c 2 blah <test.txt
-blahh
-hhblahhb
-hhblahhb
-hhblahh
+Standard Input:blahh
+Standard Input:hhblahhb
+Standard Input:hhblahhb
+Standard Input:hhblahh
+
+NOTE: THIS IS MY PROGRAM RUNNING ON BRENDA'S' LINUX MACHINE (mac didn't' work with ELF or COF)
+brenda@brenda-ThinkPad-Yoga-14:~/Downloads$ perl -e 'print "\177ELF"' >pattern.bin
+brenda@brenda-ThinkPad-Yoga-14:~/Downloads$ hexdump -c pattern.bin
+0000000 177   E   L   F                                                
+0000004
+brenda@brenda-ThinkPad-Yoga-14:~/Downloads$ 
+brenda@brenda-ThinkPad-Yoga-14:~/Downloads$ 
+brenda@brenda-ThinkPad-Yoga-14:~/Downloads$ 
+brenda@brenda-ThinkPad-Yoga-14:~/Downloads$ 
+brenda@brenda-ThinkPad-Yoga-14:~/Downloads$ ./bgrep -c 2 -p pattern.bin ./bgrep
+ELF?

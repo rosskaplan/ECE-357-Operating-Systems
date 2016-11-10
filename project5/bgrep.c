@@ -13,7 +13,7 @@
 #define PATTERN_MAX 2048
 
 void handler();
-void printout(char*, int);
+void printout(char*, int, char*);
 int findPattern(int, char*, char**, int, int);
 
 jmp_buf env;
@@ -100,8 +100,9 @@ int findPattern(int context, char* pattern, char** files, int numfiles, int isSt
     int i = 0;
     if (isStdin) {
         numfiles = 1;
-        i = 1;
+        i = 0;
         p = files[0];
+        files[0] = "Standard Input"; //for printout
         goto label;
     }
     printed = 0;
@@ -129,11 +130,11 @@ int findPattern(int context, char* pattern, char** files, int numfiles, int isSt
                 int numlooped = 1;
                 if (strlen(pattern) == 1){
                     if (ploop-1-context < 0) {
-                        printout(&p[0], (context+strlen(pattern))); //handle overflow off back in print fcn
+                        printout(&p[0], (context+strlen(pattern)), files[i]); //handle overflow off back in print fcn
                         ploop++;
                         goto label;
                     } else {
-                        printout(&p[ploop-context], 2*context+strlen(pattern));
+                        printout(&p[ploop-context], 2*context+strlen(pattern), files[i]);
                         ploop++;
                         goto label;
                     }
@@ -147,9 +148,9 @@ int findPattern(int context, char* pattern, char** files, int numfiles, int isSt
                         numlooped++;
                         if (numlooped == strlen(pattern)-1) {
                             if (ploop-context < 1) {
-                                printout(&p[0], (2*context+strlen(pattern)+(ploop-2-context)-1)); //handle overflow off back in print fcn
+                                printout(&p[0], (2*context+strlen(pattern)+(ploop-2-context)-1), files[i]); //handle overflow off back in print fcn
                             } else {
-                                printout(&p[ploop-context-strlen(pattern)+2], 2*context+strlen(pattern));
+                                printout(&p[ploop-context-strlen(pattern)+2], 2*context+strlen(pattern), files[i]);
                             }
                             goto label;
                         }
@@ -165,8 +166,9 @@ if (printed != 0)
 return 1;
 }
 
-void printout(char* printstr, int numchars) {
+void printout(char* printstr, int numchars, char* file) {
     printed=1;
+    printf("%s:", file);
     for (int i = 0; i < numchars; i++) {
         if (printstr[i] != '\0') {
             if (printstr[i] > 32 || printstr[i] == ' ')
