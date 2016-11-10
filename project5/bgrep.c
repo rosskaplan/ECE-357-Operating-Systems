@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <setjmp.h>
 
 #define PATTERN_MAX 2048
 
@@ -15,10 +16,13 @@ void handler();
 void printout(char*, int);
 int findPattern(int, char*, char**, int, int);
 
+jmp_buf env;
+int printed = 0;
+
 int main(int argc, char **argv) {
     
     signal(SIGBUS, handler);
-
+    
     int context = 0;
     char *pattern = malloc(sizeof(char)*(PATTERN_MAX+1));
     pattern = "\0";
@@ -83,18 +87,15 @@ int main(int argc, char **argv) {
 
     int numfiles = (redirect == 1 ? 1 : (patternset == 2 ? i-1 : i));
 
-if (findPattern(context, pattern, files, numfiles, isStdin) == -1)
-    return -1;
-
-return 0;
+return findPattern(context, pattern, files, numfiles, isStdin);
 }
 
 int findPattern(int context, char* pattern, char** files, int numfiles, int isStdin) {
 
     int fd;
+    int ret = 0;
     struct stat stat_struct;
     char* p;
-    int printed = 0;
     int ploop = 0;
     int i = 0;
     if (isStdin) {
@@ -103,8 +104,10 @@ int findPattern(int context, char* pattern, char** files, int numfiles, int isSt
         p = files[0];
         goto label;
     }
+    printed = 0;
     //Use the length of the file to get the block of memory
-    for (; i < numfiles; i++) {
+    labeltwo: for (; i < numfiles; i++) {
+        ploop = 0;
         if (lstat(files[i], &stat_struct) != 0) {
             fprintf(stderr, "Failed to get stat struct on %s: %s\n", files[i], strerror(errno));
             return -1;
@@ -113,46 +116,57 @@ int findPattern(int context, char* pattern, char** files, int numfiles, int isSt
         fd = open(files[i], O_RDONLY);
         p = mmap(NULL, stat_struct.st_size, PROT_READ, MAP_SHARED, fd, 0);
         label:for (; ploop < (isStdin == 1) ? strlen(files[0]) : stat_struct.st_size; ploop++) {
+            if (setjmp(env) != 0) {
+                ret = -1;
+                continue;
+            }
+            if (!p[ploop]) {
+                i++;
+                goto labeltwo;
+            }
             if (p[ploop]==pattern[0]) {
                 int cnt = 0;
                 int numlooped = 1;
                 if (strlen(pattern) == 1){
                     if (ploop-1-context < 0) {
-                        printout(&p[0], (2*context+strlen(pattern)+(ploop-1-context))); //handle overflow off back in print fcn
-                        printed=1;
+                        printout(&p[0], (context+strlen(pattern))); //handle overflow off back in print fcn
                         ploop++;
                         goto label;
                     } else {
                         printout(&p[ploop-context], 2*context+strlen(pattern));
-                        printed=1;
                         ploop++;
                         goto label;
                     }
                 }else{
-                    while(++ploop < (isStdin==1) ? strlen(files[0]) : stat_struct.st_size && p[ploop] == pattern[++cnt] && cnt < strlen(pattern)) {
+                    while(++ploop < (isStdin==1) ? strlen(files[0]) : stat_struct.st_size && cnt < strlen(pattern) && p[ploop] == pattern[++cnt]) {
+                    if (setjmp(env) != 0) {
+                        ret = -1;
+                        i++;
+                        goto labeltwo;
+                    }
                         numlooped++;
                         if (numlooped == strlen(pattern)-1) {
-                            if (ploop-1-context < 0) {
-                                printout(&p[0], (2*context+strlen(pattern)+(ploop-2-context))); //handle overflow off back in print fcn
-                                printed=1;
+                            if (ploop-context < 1) {
+                                printout(&p[0], (2*context+strlen(pattern)+(ploop-2-context)-1)); //handle overflow off back in print fcn
                             } else {
-                                printed=1;
                                 printout(&p[ploop-context-strlen(pattern)+2], 2*context+strlen(pattern));
-                                printf("ploop: %d\n", ploop);
                             }
                             goto label;
                         }
                     }
-                }   
+                }
             }
         }
     }
-if (printed == 1)
+if (ret == -1)
+    return -1;
+if (printed != 0)
     return 0;
 return 1;
 }
 
 void printout(char* printstr, int numchars) {
+    printed=1;
     for (int i = 0; i < numchars; i++) {
         if (printstr[i] != '\0') {
             if (printstr[i] > 32 || printstr[i] == ' ')
@@ -168,5 +182,6 @@ return;
 
 void handler() {
     fprintf(stderr, "SIGBUS received while processing files\n");
+    longjmp(env, 0);
     return;
 } 

@@ -1,0 +1,35 @@
+Rosss-MacBook-Air:project5 barbarakaplan$ ls
+a.out   bgrep.c   justpattern.txt pattern2.txt  test.txt
+aaa.txt   hello   pattern.txt pset-w05.pdf  test1.txt
+Rosss-MacBook-Air:project5 barbarakaplan$ echo -n "blahh blahh blahh blahh" > blahh
+Rosss-MacBook-Air:project5 barbarakaplan$ cat blahh
+blahh blahh blahh blahhRosss-MacBook-Air:project5 barbarakagcc bgrep.c
+Rosss-MacBook-Air:project5 barbarakaplan$ ./a.out -c 3 blahh blahh
+blahh bl
+hh blahh bl
+hh blahh bl
+hh blahh
+Rosss-MacBook-Air:project5 barbarakaplan$ ./a.out blahh blahh
+blahh
+blahh
+blahh
+blahh
+Rosss-MacBook-Air:project5 barbarakaplan$ echo -n "blah" > blah.txt
+Rosss-MacBook-Air:project5 barbarakaplan$ ./a.out -p blah.txt blahh
+blah
+blah
+blah
+blah
+Rosss-MacBook-Air:project5 barbarakaplan$ ./a.out -p noooooooope test
+Failed to get stat struct on noooooooope: No such file or directory
+Rosss-MacBook-Air:project5 barbarakaplan$ echo $?
+255
+Rosss-MacBook-Air:project5 barbarakaplan$ ./a.out nooooooooooooooooo test.txt
+Rosss-MacBook-Air:project5 barbarakaplan$ echo $?
+1
+Rosss-MacBook-Air:project5 barbarakaplan$ cat test.txt
+blahhblahhblahhblahhRosss-MacBook-Air:project5 barbarakaplan$ ./a.out -c 2 blah <test.txt
+blahh
+hhblahhb
+hhblahhb
+hhblahh
