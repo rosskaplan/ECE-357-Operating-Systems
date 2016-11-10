@@ -5,16 +5,31 @@
 #include <errno.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <signal.h>
 
 #define PATTERN_MAX 2048
 
-int findPattern(int, char*, char**, int);
+void handler();
+void printout(char*, int);
+int findPattern(int, char*, char**, int, int);
 
 int main(int argc, char **argv) {
+    
+    signal(SIGBUS, handler);
+
     int context = 0;
     char *pattern = malloc(sizeof(char)*(PATTERN_MAX+1));
     pattern = "\0";
     char ch;
+    int patternfd;
+    int patternset = 0;
+    struct stat stat_struct;
+    struct stat stdin_stats;
+    char* stdinfilename;
+    int redirect = 0;
+    int isStdin = 0;
     while ((ch = getopt(argc, argv, "c:p:")) != -1) {
         switch(ch) {
             case 'c':
@@ -32,31 +47,126 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Invalid argument: %s. The pattern should be fewer than 2048 characters.\n", optarg);
                     return -1;
                 }
-                pattern = optarg;
+                patternfd = open(optarg, O_RDONLY);
+
+                if (lstat(optarg, &stat_struct) != 0) {
+                    fprintf(stderr, "Failed to get stat struct on %s: %s\n", optarg, strerror(errno));
+                    return -1;
+                }
+                pattern = mmap(NULL, stat_struct.st_size, PROT_READ, MAP_SHARED, patternfd, 0);
+                patternset = 1;
                 break;
         }
     }
     char** files = malloc(sizeof(char)*(argc-optind)*(PATTERN_MAX+1));
+    if (patternset == 0) {
+        pattern = argv[optind];
+    }
     int i = 0;
     for (; i < argc-optind; i++) {
-        files[i] = argv[optind+i];
+        if (patternset == 0) {
+            patternset = 2;
+            continue;
+        }
+        files[(patternset == 2) ? i-1 : i] = argv[optind+i]; //Start at 0 always
     }
 
-if (findPattern(context, pattern, files, i) == -1)
+    if ((patternset == 1 && argc == optind) || (patternset == 2 && argc-1 == optind)) {
+        redirect = 1;
+        if (fstat(0, &stdin_stats) != 0) {
+            fprintf(stderr, "Failed to get stat struct from standard input. Error: %s.\n", strerror(errno));
+            return -1;
+        }
+        files[0] = mmap(NULL,stdin_stats.st_size, PROT_READ, MAP_SHARED, 0, 0);
+        isStdin = 1;
+    }
+
+    int numfiles = (redirect == 1 ? 1 : (patternset == 2 ? i-1 : i));
+
+if (findPattern(context, pattern, files, numfiles, isStdin) == -1)
     return -1;
 
 return 0;
 }
 
-int findPattern(int context, char* pattern, char** files, int numfiles) {
+int findPattern(int context, char* pattern, char** files, int numfiles, int isStdin) {
 
+    int fd;
     struct stat stat_struct;
+    char* p;
+    int printed = 0;
+    int ploop = 0;
+    int i = 0;
+    if (isStdin) {
+        numfiles = 1;
+        i = 1;
+        p = files[0];
+        goto label;
+    }
     //Use the length of the file to get the block of memory
-    for (int i = 0; i < numfiles; i++) {
+    for (; i < numfiles; i++) {
         if (lstat(files[i], &stat_struct) != 0) {
             fprintf(stderr, "Failed to get stat struct on %s: %s\n", files[i], strerror(errno));
             return -1;
         }
-    int p = mmap(NULL, stat_struct.st_size, 
 
+        fd = open(files[i], O_RDONLY);
+        p = mmap(NULL, stat_struct.st_size, PROT_READ, MAP_SHARED, fd, 0);
+        label:for (; ploop < (isStdin == 1) ? strlen(files[0]) : stat_struct.st_size; ploop++) {
+            if (p[ploop]==pattern[0]) {
+                int cnt = 0;
+                int numlooped = 1;
+                if (strlen(pattern) == 1){
+                    if (ploop-1-context < 0) {
+                        printout(&p[0], (2*context+strlen(pattern)+(ploop-1-context))); //handle overflow off back in print fcn
+                        printed=1;
+                        ploop++;
+                        goto label;
+                    } else {
+                        printout(&p[ploop-context], 2*context+strlen(pattern));
+                        printed=1;
+                        ploop++;
+                        goto label;
+                    }
+                }else{
+                    while(++ploop < (isStdin==1) ? strlen(files[0]) : stat_struct.st_size && p[ploop] == pattern[++cnt] && cnt < strlen(pattern)) {
+                        numlooped++;
+                        if (numlooped == strlen(pattern)-1) {
+                            if (ploop-1-context < 0) {
+                                printout(&p[0], (2*context+strlen(pattern)+(ploop-2-context))); //handle overflow off back in print fcn
+                                printed=1;
+                            } else {
+                                printed=1;
+                                printout(&p[ploop-context-strlen(pattern)+2], 2*context+strlen(pattern));
+                                printf("ploop: %d\n", ploop);
+                            }
+                            goto label;
+                        }
+                    }
+                }   
+            }
+        }
+    }
+if (printed == 1)
+    return 0;
+return 1;
 }
+
+void printout(char* printstr, int numchars) {
+    for (int i = 0; i < numchars; i++) {
+        if (printstr[i] != '\0') {
+            if (printstr[i] > 32 || printstr[i] == ' ')
+                printf("%c", printstr[i]);
+            else
+                printf("?");
+        }
+    }
+    printf("\n");
+
+return;
+}
+
+void handler() {
+    fprintf(stderr, "SIGBUS received while processing files\n");
+    return;
+} 
