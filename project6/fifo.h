@@ -12,9 +12,9 @@ struct fifo {
     struct sem *lock, *wr, *rd;
 };
 
-void fifo_init(struct sem *f);
+void fifo_init(struct fifo *f);
 
-void fifo_wr(struct sem *f);
+void fifo_wr(struct fifo *f, unsigned long d);
 
 unsigned long fifo_rd(struct fifo *f);
 
