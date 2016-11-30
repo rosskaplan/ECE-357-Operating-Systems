@@ -84,7 +84,7 @@ void sem_inc(struct sem *s) {
             s->semarr[i] = 0;
         }
     }
-    s->spinlock = 0;
+    s->spinlock = "";
 
     return;
 }
