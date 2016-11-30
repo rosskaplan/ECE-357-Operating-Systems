@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <string.h>
 
 void sem_init(struct sem *s, int count) {
     s->count = count;
@@ -12,7 +13,7 @@ void sem_init(struct sem *s, int count) {
     return;
 }
 
-void signalhandler(void) {
+void signalhandler(int signalnum) {
     return;
 }
 

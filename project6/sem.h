@@ -17,6 +17,6 @@ void sem_wait(struct sem *s);
 
 void sem_inc(struct sem *s);
 
-void signalhandler(void);
+void signalhandler(int signalnum);
 
 #endif // SEM_H_
