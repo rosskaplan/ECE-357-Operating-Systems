@@ -1,10 +1,12 @@
 #ifndef SEM_H_
 #define SEM_H_
 
+#define SEMARR_SIZE 64
+
 struct sem {
-    int semarr[50];
+    int semarr[SEMARR_SIZE];
     int count;
-    char* spinlock;
+    char spinlock;
 };
 
 int tas(volatile char *lock);

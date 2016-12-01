@@ -8,9 +8,12 @@
 #include <string.h>
 
 void sem_init(struct sem *s, int count) {
-    printf("hi");
     s->count = count;
-    printf("hi");
+    s->spinlock = '\0';
+
+    for (int i = 0; i < SEMARR_SIZE; ++i) {
+        s->semarr[i] = 0; //pid's to 0
+    }
     return;
 }
 
@@ -19,27 +22,21 @@ void signalhandler(int signalnum) {
 }
 
 int sem_try(struct sem*s) {
-    while(tas(s->spinlock) != 0) {
-        //Getting the lock
-    }
 
-    s->spinlock = "";
-    if (s->count >= 1) {
-        --(s->count);
+    if (tas(&(s->spinlock)) == 1)
         return 1;
-    } else { //Count can never be negative
+    else
         return 0;
-    }
 }
 
 void sem_wait(struct sem *s) {
     for(;;) {
-        while(tas(s->spinlock) != 0) {
+        while(tas(&s->spinlock) != 0) {
             //Getting the lock
         }
         if (s->count >= 1) {
             --(s->count);
-            s->spinlock = "";
+            s->spinlock = '\0';
             return;
         } else {
             //Reference: page 5 of notes
@@ -47,7 +44,7 @@ void sem_wait(struct sem *s) {
             s->semarr[s->count] = getpid(); //This call cannot fail
             //Allow user to break
             if (sigdelset(&newmask, SIGUSR1) != 0) {
-                fprintf(stderr, "Failed to enable SIGINT. Error: %s.\n", strerror(errno));
+                fprintf(stderr, "Failed to enable SIGUSR1. Error: %s.\n", strerror(errno));
                 exit(-1);
             }
             if (sigdelset(&newmask, SIGINT) != 0) {
@@ -59,7 +56,7 @@ void sem_wait(struct sem *s) {
                 exit(-1);
             }
             signal(SIGUSR1, signalhandler);
-            s->spinlock = "";
+            s->spinlock = '\0';
             sigsuspend(&newmask);
             if (sigprocmask(SIG_UNBLOCK, &oldmask, NULL) != 0) {
                 fprintf(stderr, "Failed to unblock. Error: %s.\n", strerror(errno));
@@ -72,11 +69,13 @@ void sem_wait(struct sem *s) {
 }
 
 void sem_inc(struct sem *s) {
-    while(tas(s->spinlock) != 0) {
-        //Getting the lock
-    }
+    printf("here!");
+    printf("here!");
+
+    while(tas(&s->spinlock)); 
+
     ++(s->count);
-    for (int i = 0; i < s->count; i++) {
+    for (int i = 0; i < SEMARR_SIZE; i++) {
         if (s->semarr[i]) {
             if (kill(s->semarr[i],SIGUSR1) != 0) {
                 fprintf(stderr, "Failed to send SIGUSR to process %d. Error: %s.\n", s->semarr[i], strerror(errno));
@@ -85,7 +84,7 @@ void sem_inc(struct sem *s) {
             s->semarr[i] = 0;
         }
     }
-    s->spinlock = "";
+    s->spinlock = '\0';
 
     return;
 }

@@ -1,4 +1,4 @@
-temp.exe: fifo.o sem.o tmp.o tas64.S
+temp.exe: fifo.o sem.o temp.o tas64.S
 	gcc -o fifotest.exe fifo.o sem.o tas64.S temp.o
 
 runfifo.exe: testfifo.o fifo.o sem.o tas64.S
@@ -13,7 +13,7 @@ fifo.o: fifo.c fifo.h
 sem.o: sem.c sem.h
 	gcc -c sem.c
 
-tmp.o: temp.c
+temp.o: temp.c
 	gcc -c temp.c 
 
 tas.exe: tas.c

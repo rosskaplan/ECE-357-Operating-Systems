@@ -4,9 +4,7 @@
 
 void fifo_init(struct fifo *f) {
     //Fifo is empty
-    printf("hi");
     sem_init(&(f->lock), 1);
-    printf("hi");
     sem_init(&(f->wr), MYFIFO_BUFSIZ);
     sem_init(&(f->rd), 0);
 
@@ -18,10 +16,9 @@ void fifo_init(struct fifo *f) {
 
 void fifo_wr(struct fifo *f, unsigned long d) {
     //Wait until you get the lock and write.
-    
     if ((f->writepos) % MYFIFO_BUFSIZ == (((f->readpos)+1) % MYFIFO_BUFSIZ)) {
-        sem_wait(&(f->lock));
         sem_wait(&(f->wr));
+        sem_wait(&(f->lock));
     } else {
         sem_try(&(f->lock));
         sem_try(&(f->wr));
@@ -29,15 +26,14 @@ void fifo_wr(struct fifo *f, unsigned long d) {
 
     //Now that we have the lock and we block other processes, write.
     //Put the int at the ending spot of the fifo
-    f->fifoarr[f->writepos] = d;
-    ++(f->writepos);
-    if ((f->writepos) == MYFIFO_BUFSIZ)
-        f->writepos -= MYFIFO_BUFSIZ;
+    f->fifoarr[f->writepos++] = d;
+    f->writepos %= MYFIFO_BUFSIZ;
 
+    printf("About to incrementt\n");
     //Wake up all other processes, increment.
-    sem_inc(&(f->rd));
     sem_inc(&(f->lock));
-    
+    sem_inc(&(f->rd));
+    printf("After incrementing\n");
     return;
 }
 
@@ -46,8 +42,8 @@ unsigned long fifo_rd(struct fifo *f) {
     //Follow a very similar logic to above
     unsigned long temp;
     if ((f->writepos) % MYFIFO_BUFSIZ == (((f->readpos)+1) % MYFIFO_BUFSIZ)) {
-        sem_wait(&(f->lock));
         sem_wait(&(f->rd));
+        sem_wait(&(f->lock));
     } else {
         sem_try(&(f->lock));
         sem_try(&(f->rd));
