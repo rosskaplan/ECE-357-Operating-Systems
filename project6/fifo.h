@@ -9,7 +9,7 @@
 struct fifo {
     long int fifoarr[MYFIFO_BUFSIZ];
     int count, writepos, readpos;
-    struct sem *lock, *wr, *rd;
+    struct sem lock, wr, rd;
 };
 
 void fifo_init(struct fifo *f);

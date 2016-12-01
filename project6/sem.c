@@ -8,8 +8,9 @@
 #include <string.h>
 
 void sem_init(struct sem *s, int count) {
+    printf("hi");
     s->count = count;
-    
+    printf("hi");
     return;
 }
 
