@@ -17,26 +17,34 @@ int main(int argc, char **argv) {
     int waitstats;
     struct fifo f1;
     fifo_init(&f1);
-    for (int i = 0; i < 4; i++) {
+    unsigned long temp;
+    
+    for (int i = 0; i < 2; i++) {
         switch(pid = fork()) {
-            case -1: 
+            case -1:
                 fprintf(stderr, "Error: failed to fork.  Error code: %s\n", strerror(errno));
                 exit(-1);
             case 0: 
-                for (int j = 0; j < 5; j++) {
-                    printf("%d&%d: %d\n",i,j,i+1+j*4);
-                    fifo_wr(&f1, i + j*4+1);
+                if (i == 0) {
+                    for (int j = 0; j < 5; j++) {
+                        fifo_wr(&f1, j);
+                    }
+                } else {
+                    for (int j = 0; j < 5; j++) {
+                        temp = fifo_rd(&f1);
+                        printf("%lu\n", temp);
+                    }
                 }
-
                 exit(0);
             default:
                 continue;
         }
     }
-    for (int i = 0; i < 4; i++) wait(&waitstats);
-
+    for (int i = 0; i < 2; i++) wait(&waitstats);
+    /*
     for (int i = 0; i < 20; i++) {
         printf("%d: %lu\n", i, f1.fifoarr[i]);
-    }
+    } */
+    
     return 0;
 }
