@@ -37,7 +37,7 @@ void sem_wait(struct sem *s) {
         if (s->count >= 1) {
             printf("2\n");
             s->semarr[s->count] = 0;
-            --(s->count);
+            s->count--;
             s->spinlock = 0;
             return;
         } else {
@@ -85,8 +85,7 @@ void sem_wait(struct sem *s) {
 void sem_inc(struct sem *s) {
     while(tas(&s->spinlock)) {
     } 
-
-    ++(s->count);
+    s->count++;
     for (int i = 0; i < SEMARR_SIZE; i++) {
         if (s->semarr[i]) {
             if (kill(s->semarr[i],SIGUSR1) != 0) {
