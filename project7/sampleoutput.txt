@@ -1,0 +1,99 @@
+PROBLEM 1:
+
+execve("./a.out", ["./a.out"], [/* 63 vars */]) = 0
+brk(NULL)                               = 0x104d000
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f6fa3e18000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+open("/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=115076, ...}) = 0
+mmap(NULL, 115076, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f6fa3dfb000
+close(3)                                = 0
+access("/etc/ld.so.nohwcap", F_OK)      = -1 ENOENT (No such file or directory)
+open("/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0P\t\2\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=1864888, ...}) = 0
+mmap(NULL, 3967392, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f6fa382c000
+mprotect(0x7f6fa39eb000, 2097152, PROT_NONE) = 0
+mmap(0x7f6fa3beb000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1bf000) = 0x7f6fa3beb000
+mmap(0x7f6fa3bf1000, 14752, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f6fa3bf1000
+close(3)                                = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f6fa3dfa000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f6fa3df9000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f6fa3df8000
+arch_prctl(ARCH_SET_FS, 0x7f6fa3df9700) = 0
+mprotect(0x7f6fa3beb000, 16384, PROT_READ) = 0
+mprotect(0x600000, 4096, PROT_READ)     = 0
+mprotect(0x7f6fa3e1a000, 4096, PROT_READ) = 0
+munmap(0x7f6fa3dfb000, 115076)          = 0
+fstat(1, {st_mode=S_IFREG|0664, st_size=0, ...}) = 0
+brk(NULL)                               = 0x104d000
+brk(0x106f000)                          = 0x106f000
+write(1, "Hello world!\n", 13)          = 13
+exit_group(0)
++++ exited with 0 +++
+
+NOTES: write system call was:
+write(1, "Hello world!\n", 13)          = 13
+
+PROBLEM 2: 
+
+ross@Ross-Ubuntu:~/Documents/os/project7$ cat Makefile 
+part2: part2.S
+    as --64 -o part2.o part2.S
+    ld -m elf_x86_64 part2.o -o part2.out
+ross@Ross-Ubuntu:~/Documents/os/project7$ ./
+a.out      part2.out  
+ross@Ross-Ubuntu:~/Documents/os/project7$ ./part2.out 
+Hello world
+Segmentation fault (core dumped)
+
+ross@Ross-Ubuntu:~/Documents/os/project7$ strace ./part2.out 
+execve("./part2.out", ["./part2.out"], [/* 63 vars */]) = 0
+write(1, "Hello world\n\0", 13Hello world
+)         = 13
+--- SIGSEGV {si_signo=SIGSEGV, si_code=SI_KERNEL, si_addr=0} ---
++++ killed by SIGSEGV (core dumped) +++
+Segmentation fault (core dumped)
+
+PROBLEM 3: 
+
+ross@Ross-Ubuntu:~/Documents/os/project7$ make part3
+as --64 -o part3.o part3.S
+ld -m elf_x86_64 part3.o -o part3.out
+ross@Ross-Ubuntu:~/Documents/os/project7$ ./part3.out 
+Hello world
+ross@Ross-Ubuntu:~/Documents/os/project7$ strace ./part3.out 
+execve("./part3.out", ["./part3.out"], [/* 63 vars */]) = 0
+write(1, "Hello world\n\0", 13Hello world
+)         = 13
+exit(0)                                 = ?
++++ exited with 0 +++
+
+ross@Ross-Ubuntu:~/Documents/os/project7$ echo $?
+0
+
+NOTES: This segfault was occurring because it continued to try and execute instructions and the program counter continued. With no more instructions, but no return/exit, the program counter went past the opcode-region and began trying to access memory it couldn't.  Sigsegv.
+
+PROBLEM 4: 
+
+ross@Ross-Ubuntu:~/Documents/os/project7$ make part4
+as --64 -o part4.o part4.S
+ld -m elf_x86_64 part4.o -o part4.out
+ross@Ross-Ubuntu:~/Documents/os/project7$ ./part4.out 
+ross@Ross-Ubuntu:~/Documents/os/project7$ strace ./part4.out 
+execve("./part4.out", ["./part4.out"], [/* 64 vars */]) = 0
+fstat(0, NULL)                          = -1 EFAULT (Bad address)
+exit(0)                                 = ?
++++ exited with 0 +++
+
+PROBLEM 5: 
+
+ross@Ross-Ubuntu:~/Documents/os/project7$ make part5 
+gcc -O0 -o part5.out part5.c
+ross@Ross-Ubuntu:~/Documents/os/project7$ ./part5.out 
+The empty for loop of 1e8: 1.449699 nanoseconds.
+The for loop of empty function calls (1e8 iterations): 2.164518 nanoseconds.
+The for loop of syscalls (1e8 iterations): 37.676212 nanoseconds.
+
+NOTES: You'll note that the empty for-loop is the fastest, followed by the empty function call, followed by the syscall.  A system call is around 17.5 times slower than the empty function call.  This overhead is caused by the need to go into kernel code, execute the system call's handler function, and return back to user mode.  Unlike a function call, the system call needs to take numerous steps for safety and security to preserve the state of the process that made the syscall.  For these reasons, the syscall is significantly slower than a standard function call.
