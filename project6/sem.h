@@ -6,7 +6,7 @@
 struct sem {
     int semarr[SEMARR_SIZE];
     int count;
-    char spinlock;
+    char spinlock; //Match the provided tas.S file
 };
 
 int tas(volatile char *lock);

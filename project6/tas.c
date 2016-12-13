@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
 
     pid_t pid; 
     long* test;
-    if ((test = mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANON, 0, 0)) != 0) {
+    if ((test = mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANON, -1, 0)) == 0) {
         fprintf(stderr, "Error mapping.  Error code: %s\n", strerror(errno));
         exit(-1);
     }

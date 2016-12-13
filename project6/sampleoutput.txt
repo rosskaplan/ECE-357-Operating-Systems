@@ -1,0 +1,167 @@
+Problem 1: 
+
+ross@Ross-Ubuntu:~/Documents/os/project6$ make tas.exe 
+gcc tas.c -o tas.out
+ross@Ross-Ubuntu:~/Documents/os/project6$ ./tas.out 
+
+With Locking: 64000000
+Without Locking: 2472093
+ross@Ross-Ubuntu:~/Documents/os/project6$ ./tas.out 
+
+With Locking: 64000000
+Without Locking: 4040209
+ross@Ross-Ubuntu:~/Documents/os/project6$ ./tas.out 
+
+With Locking: 64000000
+Without Locking: 5173867
+ross@Ross-Ubuntu:~/Documents/os/project6$ ./tas.out 
+
+With Locking: 64000000
+Without Locking: 10401853
+
+Rest of the problems: 
+
+Wrote 0 from process 1
+Wrote 1 from process 1
+Wrote 2 from process 1
+Wrote 3 from process 1
+Wrote 4 from process 1
+Wrote 5 from process 1
+Wrote 6 from process 1
+Wrote 7 from process 1
+Wrote 8 from process 1
+Wrote 9 from process 1
+Wrote 10 from process 1
+Wrote 11 from process 1
+Read 0
+Wrote 12 from process 1
+Read 1
+Wrote 13 from process 1
+Read 2
+Wrote 14 from process 1
+Read 3
+Wrote 15 from process 1
+Read 4
+Wrote 16 from process 1
+Read 5
+Wrote 17 from process 1
+Read 6
+Wrote 18 from process 1
+Read 7
+Wrote 19 from process 1
+Read 8
+Wrote 20 from process 1
+Read 9
+Wrote 21 from process 1
+Wrote 22 from process 1
+Wrote 23 from process 1
+Wrote 24 from process 1
+Wrote 25 from process 1
+Wrote 26 from process 1
+Wrote 27 from process 1
+Wrote 28 from process 1
+Read 10
+Wrote 29 from process 1
+Wrote 30 from process 1
+Read 11
+Wrote 31 from process 1
+Read 12
+Wrote 32 from process 1
+Read 13
+Wrote 33 from process 1
+
+...
+
+Wrote 10295 from process 2
+Read 10292
+Wrote 10296 from process 2
+Read 10293
+Wrote 10297 from process 2
+Read 10294
+Wrote 10298 from process 2
+Read 10295
+Wrote 10299 from process 2
+Read 10296
+Wrote 10300 from process 2
+Read 10297
+Wrote 10301 from process 2
+Read 10298
+Wrote 10302 from process 2
+Read 10299
+Wrote 10303 from process 2
+Read 10300
+Wrote 10304 from process 2
+Read 10301
+Wrote 10305 from process 2
+Read 10302
+Wrote 10306 from process 2
+Read 10303
+Wrote 10307 from process 2
+Read 10304
+Wrote 10308 from process 2
+Read 10305
+Wrote 10309 from process 2
+Read 10306
+Wrote 10310 from process 2
+Read 10307
+Wrote 10311 from process 2
+Read 10308
+
+...
+
+Wrote 30459 from process 4
+Wrote 30460 from process 4
+Read 30445
+Wrote 30461 from process 4
+Read 30446
+Wrote 30462 from process 4
+Read 30447
+Wrote 30463 from process 4
+Read 30448
+Wrote 30464 from process 4
+Read 30449
+Wrote 30465 from process 4
+Read 30450
+Wrote 30466 from process 4
+Read 30451
+Wrote 30467 from process 4
+Read 30452
+Wrote 30468 from process 4
+Read 30453
+Wrote 30469 from process 4
+Read 30454
+Wrote 30470 from process 4
+Read 30455
+Wrote 30471 from process 4
+Read 30456
+Wrote 30472 from process 4
+Read 30457
+Wrote 30473 from process 4
+Read 30458
+Wrote 30474 from process 4
+Read 30459
+Read 30460
+Read 30461
+Read 30462
+Read 30463
+Wrote 30475 from process 4
+Read 30464
+Wrote 30476 from process 4
+Read 30465
+Wrote 30477 from process 4
+Read 30466
+Wrote 30478 from process 4
+Read 30467
+Wrote 30479 from process 4
+Read 30468
+Wrote 30480 from process 4
+Read 30469
+Wrote 30481 from process 4
+Read 30470
+Wrote 30482 from process 4
+Read 30471
+Wrote 30483 from process 4
+Read 30472
+Wrote 30484 from process 4
+Read 30473
+Wrote 30485 from process 4

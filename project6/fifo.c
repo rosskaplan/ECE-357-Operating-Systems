@@ -16,13 +16,12 @@ void fifo_init(struct fifo *f) {
 
 void fifo_wr(struct fifo *f, unsigned long d) {
 
-    sem_wait(&(f->lock));
     sem_wait(&(f->wr));
+    sem_wait(&(f->lock));
     //Now that we have the lock and we block other processes, write.
     //Put the int at the ending spot of the fifo
     f->fifoarr[f->writepos++] = d;
     f->writepos %= MYFIFO_BUFSIZ;
-    printf("hi");
     //Wake up all other processes, increment.
     sem_inc(&(f->rd));
     sem_inc(&(f->lock));
@@ -30,18 +29,16 @@ void fifo_wr(struct fifo *f, unsigned long d) {
 }
 
 unsigned long fifo_rd(struct fifo *f) {
-
     //Follow a very similar logic to above
     unsigned long temp;
 
-    sem_wait(&(f->lock));
     sem_wait(&(f->rd));
+    sem_wait(&(f->lock));
  
     //Now that we have the lock and we block other processes, write.
     //Put the int at the ending spot of the fifo
     temp = f->fifoarr[f->readpos++];
     f->readpos %= MYFIFO_BUFSIZ;
-
     //Wake up all other processes, increment.
     sem_inc(&(f->wr));
     sem_inc(&(f->lock));

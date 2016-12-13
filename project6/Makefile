@@ -1,5 +1,6 @@
-temp.exe: fifo.o sem.o temp.o tas64.S
-	gcc -o fifotest.exe fifo.o sem.o tas64.S temp.o
+test.exe: fifo.o sem.o test.o tas64.S
+	gcc -o fifotest.exe fifo.o sem.o tas64.S test.o
+	make clean
 
 runfifo.exe: testfifo.o fifo.o sem.o tas64.S
 	gcc -o testfifo.o fifo.o sem.o tas64.S
@@ -13,8 +14,11 @@ fifo.o: fifo.c fifo.h
 sem.o: sem.c sem.h
 	gcc -c sem.c
 
-temp.o: temp.c
-	gcc -c temp.c 
+test.o: test.c
+	gcc -c test.c 
 
 tas.exe: tas.c
 	gcc tas.c -o tas.out
+
+clean:
+	rm *.o

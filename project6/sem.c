@@ -12,7 +12,7 @@ void sem_init(struct sem *s, int count) {
     s->spinlock = 0;
 
     for (int i = 0; i < SEMARR_SIZE; ++i) {
-        s->semarr[i] = 0; //pid's to 0
+        s->semarr[i] = 0;
     }
     return;
 }
@@ -33,45 +33,35 @@ void sem_wait(struct sem *s) {
         while(tas(&s->spinlock)) {
             //Getting the lock
         }
-        printf("1\n");
         if (s->count >= 1) {
-            printf("2\n");
             s->semarr[s->count] = 0;
             s->count--;
             s->spinlock = 0;
             return;
         } else {
-            printf("3\n");
             signal(SIGUSR1, signalhandler);
             //Reference: page 5 of notes
             sigset_t oldmask, newmask;
             s->semarr[s->count] = getpid(); //This call cannot fail
-            printf("4\n");
             //Allow user to break
             if (sigfillset(&newmask) != 0) {
                 fprintf(stderr, "Failed to build new mask. Error: %s.\n", strerror(errno));
                 exit(-1);
             }
-            printf("5\n");
             if (sigdelset(&newmask, SIGUSR1) != 0) {
                 fprintf(stderr, "Failed to enable SIGUSR1. Error: %s.\n", strerror(errno));
                 exit(-1);
             }
-            printf("6\n");
             if (sigdelset(&newmask, SIGINT) != 0) {
                 fprintf(stderr, "Failed to enable SIGINT. Error: %s.\n", strerror(errno));
                 exit(-1);
             }
-            printf("7\n");
             if (sigprocmask(SIG_BLOCK, &newmask, &oldmask) != 0) {
                 fprintf(stderr, "Failed to block. Error: %s.\n", strerror(errno));
                 exit(-1);
             }
-            printf("8\n");
-            printf("9\n");
             s->spinlock = 0;
             sigsuspend(&newmask);
-            printf("11\n");
             if (sigprocmask(SIG_UNBLOCK, &oldmask, NULL) != 0) {
                 fprintf(stderr, "Failed to unblock. Error: %s.\n", strerror(errno));
                 exit(-1);
