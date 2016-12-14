@@ -165,3 +165,58 @@ Read 30472
 Wrote 30484 from process 4
 Read 30473
 Wrote 30485 from process 4
+
+Note from Problem 4: 
+
+ross@Ross-Ubuntu:~/Documents/os/project6$ make
+gcc -c fifo.c
+gcc -c sem.c
+gcc -c test.c 
+gcc -o fifotest.exe fifo.o sem.o tas64.S test.o
+make clean
+make[1]: Entering directory '/home/ross/Documents/os/project6'
+rm *.o
+make[1]: Leaving directory '/home/ross/Documents/os/project6'
+ross@Ross-Ubuntu:~/Documents/os/project6$ ./fifotest.exe 
+^C
+
+If we put our read locks in an incorrect order as well as our write locks in an incorrect order, the program hangs indefinitely. The ordering of the mutex lock is, therefore, super critical.
+
+Also: if we sem_inc in the illogical order in addition to waiting improperly in our fifo_wr, we can get reads and writes in an order that they were not written in.
+
+Wrote 62 from process 1
+Read 40
+Wrote 63 from process 1
+Read 41
+Wrote 64 from process 1
+Read 42
+Wrote 65 from process 1
+Read 43
+Wrote 10000 from process 2
+Wrote 66 from process 1
+Read 44
+Wrote 10001 from process 2
+
+...
+
+Read 60
+Wrote 10017 from process 2
+Wrote 84 from process 1
+Read 61
+Wrote 10018 from process 2
+Wrote 85 from process 1
+Read 62
+Wrote 10019 from process 2
+Wrote 86 from process 1
+Read 63
+Wrote 10020 from process 2
+Wrote 87 from process 1
+Read 64
+Wrote 10021 from process 2
+Wrote 88 from process 1
+Read 65
+Wrote 10022 from process 2
+Wrote 89 from process 1
+Read 66
+Wrote 10023 from process 2
+
