@@ -7,12 +7,13 @@
 #include <signal.h>
 #include <sys/time.h> //setitimer
 #include <sys/mman.h> //mmap
-struct sched_waitq *procs;
-struct sched_proc *current;
-int tick_count = 0;
-sigset_t sig_mask;
+struct sched_waitq *procs; //All the processes.  Defined in sched.h.
+struct sched_proc *current; //The current process.  This will be updated up on context switches later.
+int tick_count = 0; //Upon hak's request in the docs
+sigset_t sig_mask; //Mask we'll be blocking and unblocking often to avoid interruptions and handle them slightly later
 
 void sched_init(void (*init_fn)()) {
+    //This is the mask we empty and then add in SIGVTALRM and SIGABRT. We'll have to continually block and unblock these later on so best to make 1 concise mask for both.
     sigemptyset(&sig_mask);
     sigaddset(&sig_mask, SIGVTALRM);
     sigaddset(&sig_mask, SIGABRT);
@@ -29,7 +30,7 @@ void sched_init(void (*init_fn)()) {
         fprintf(stderr, "Error: failed to handle SIGABRT signal properly.  Error code: %s.\n", strerror(errno));
         exit(-1);
     }
-
+    //SUPER IMPORTANT NOTE: THE TIMER DOES NOT WORK WITH SLEEP. Spent so many hours reading forums and documentation to find a teeny note that sleep makes this behavior undefined. UGHHH.
     struct itimerval mytimer;
 
     mytimer.it_value.tv_sec = 0;
@@ -145,7 +146,10 @@ int sched_fork() {
         //Adjusts from the child stack top to bottom by the difference from parent stack
         //to child stack;
         unsigned long temp = (unsigned long)(newproc->stack - current->stack);
+        //Causes segfaults without the "minor" change that temp is newproc - current not the other way around
+        //blech
         adjstack(newproc->stack, newproc->stack+STACK_SIZE, temp);
+        //Also gotta be careful with the registers. They also must be offset by temp.
         newproc->context.regs[JB_BP] += temp;
         newproc->context.regs[JB_SP] += temp;
         if (sigprocmask(SIG_UNBLOCK, &sig_mask, NULL) == -1) {
@@ -173,9 +177,11 @@ int sched_exit(int exit_status) {
             current->task_state = SCHED_READY;
             current->num_children--;
             sched_switch();
+            printf("THIS IS A BUG");
             break; //THIS SHOULD NEVER BE REACHED
         }
     }
+    printf("THIS IS A BUG");
     return exit_status; //THIS SHOULD ALSO NEVER BE REACHED
 }
 
