@@ -8,9 +8,9 @@
 
 #define MAX_STRING_LENGTH 2049 //Includes null terminate
 
-int my_lineread(void);
+int my_lineread(char buf[MAX_STRING_LENGTH], int len);
 
-int main(int argc, char** argv, char** envp) {
+int main(int argc, char** argv) {
 
     struct termios term;
     if (tcgetattr(0, &term) == -1) {
@@ -26,21 +26,35 @@ int main(int argc, char** argv, char** envp) {
         exit(-1);
     }
 
-    while (my_lineread())
-        printf("\n");
+    char buf[MAX_STRING_LENGTH];
+    int len = 20;
+    int str_len;
+    str_len = my_lineread(buf, len); //Yes, single =
+    buf[str_len] = '\0';
+    printf("Buf contains: \"%s\"\n", buf);
     return 0;
 
 }
 
-int my_lineread(void) {
+int my_lineread(char buf[MAX_STRING_LENGTH], int len) {
 
     char c;
-    char buf[MAX_STRING_LENGTH];
     int length = 0;
+    for (int i = 0; i < len; i++) {
+        buf[i] = '\0';
+    }
     char newbuf[4] = "\b \b\0";
     while(read(0, &c, 1) > 0) { //Handles EOF
+        if (len > 2048) {
+            len=2048;
+            fprintf(stderr, "Note: len is shortened to 2048 characters\n");
+        }
+        if (len < 0) {
+            len=1;
+            fprintf(stderr, "Note: len is lengthened to 1 character\n");
+        }
         if (c == 4) { //EOF
-            return 0;
+            return length;
         } else if (c == 127) { //VERASE
             if (length == 0)
                 continue;
@@ -65,15 +79,15 @@ int my_lineread(void) {
             write(1, newbuf, strlen(newbuf));
         } else if (c == '\n') {
             buf[length++] = '\n';
-            return 1;
+            return length;
         } else {
             buf[length++] = c;
             write(1, &c, 1);
         }
-        if (strlen(buf) == 2048) {
-            return 1;
+        if (strlen(buf) == len) {
+            return length;
         }
     }
     //Hit end of file, exit
-    return 0;
+    return length;
 }
